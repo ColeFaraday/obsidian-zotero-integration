@@ -657,6 +657,9 @@ export async function exportToMarkdown(
   }
 
   const vaultRoot = getVaultRoot();
+  // If noteImportFolder is set, use it as the base for all output paths
+  const baseFolder = settings.noteImportFolder ? path.resolve(vaultRoot, settings.noteImportFolder) : vaultRoot;
+
   const toRender: Map<
     string,
     {
@@ -736,19 +739,22 @@ export async function exportToMarkdown(
 
       const imageRelativePath = exportFormat.imageOutputPathTemplate
         ? normalizePath(
-            sanitizeFilePath(
-              removeStartingSlash(
-                await renderTemplate(
-                  sourcePath,
-                  exportFormat.imageOutputPathTemplate,
-                  pathTemplateData
+            path.join(
+              settings.noteImportFolder || '',
+              sanitizeFilePath(
+                removeStartingSlash(
+                  await renderTemplate(
+                    sourcePath,
+                    exportFormat.imageOutputPathTemplate,
+                    pathTemplateData
+                  )
                 )
               )
             )
           )
         : '';
 
-      const imageOutputPath = path.resolve(vaultRoot, imageRelativePath);
+      const imageOutputPath = path.resolve(baseFolder, imageRelativePath);
 
       const imageBaseName = exportFormat.imageBaseNameTemplate
         ? sanitizeFilePath(
