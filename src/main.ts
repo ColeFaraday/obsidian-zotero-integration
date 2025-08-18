@@ -1,5 +1,5 @@
 import Fuse from 'fuse.js';
-import { EditableFileView, Events, Plugin, TFile } from 'obsidian';
+import { EditableFileView, Events, Plugin, TFile, Notice } from 'obsidian';
 import { shellPath } from 'shell-path';
 import path from 'path';
 
@@ -84,6 +84,7 @@ export default class ZoteroConnector extends Plugin {
 
     this.settings.exportFormats.forEach((f) => {
       this.addExportCommand(f);
+      this.addUpdateActiveNoteCommand(f);
     });
 
     this.addCommand({
@@ -239,6 +240,55 @@ export default class ZoteroConnector extends Plugin {
     );
   }
 
+  addUpdateActiveNoteCommand(format: ExportFormat) {
+    this.addCommand({
+      id: `zdc-update-active-note-${format.name}`,
+      name: `Update active note from Zotero (${format.name})`,
+      callback: async () => {
+        console.log(`Update active note command triggered for format: ${format.name}`);
+        const activeFile = this.app.workspace.getActiveFile();
+        console.log('Active file:', activeFile);
+        if (!activeFile) {
+          new Notice('No active file found.');
+          return;
+        }
+        // Check if file is in noteImportFolder
+        const noteImportFolder = this.settings.noteImportFolder;
+        console.log('noteImportFolder:', noteImportFolder);
+        if (noteImportFolder && !activeFile.path.startsWith(noteImportFolder)) {
+          new Notice('Active file is not in the note import folder.');
+          return;
+        }
+        // Read file contents
+        const fileContent = await this.app.vault.read(activeFile);
+        console.log('File content:', fileContent);
+        // Try to extract citekey from frontmatter or content
+        let citekey = '';
+        const frontmatterMatch = fileContent.match(/---[\s\S]*?citekey: (.+)[\s\S]*?---/);
+        if (frontmatterMatch) {
+          citekey = frontmatterMatch[1].trim();
+          console.log('Citekey from frontmatter:', citekey);
+        } else {
+          // Fallback: search for citekey: ... in body
+          const bodyMatch = fileContent.match(/citekey: (.+)/);
+          if (bodyMatch) {
+            citekey = bodyMatch[1].trim();
+            console.log('Citekey from body:', citekey);
+          }
+        }
+        if (!citekey) {
+          new Notice('No citekey found in active note.');
+          console.log('No citekey found.');
+          return;
+        }
+        console.log('Calling runImport with:', { format: format.name, citekey });
+        await this.runImport(format.name, citekey);
+        new Notice(`Note updated from Zotero (${format.name}).`);
+        console.log(`Note updated from Zotero (${format.name}).`);
+      },
+    });
+  }
+
   async runImport(name: string, citekey: string, library: number = 1) {
     const format = this.settings.exportFormats.find((f) => f.name === name);
 
@@ -253,6 +303,12 @@ export default class ZoteroConnector extends Plugin {
 
     if (citekey.startsWith('@')) citekey = citekey.substring(1);
 
+    // Ensure output is in noteImportFolder
+    const originalOutputPathTemplate = format.outputPathTemplate;
+    if (this.settings.noteImportFolder) {
+      format.outputPathTemplate = normalizePath(path.join(this.settings.noteImportFolder, path.basename(format.outputPathTemplate)));
+    }
+
     await exportToMarkdown(
       {
         settings: this.settings,
@@ -261,6 +317,9 @@ export default class ZoteroConnector extends Plugin {
       },
       [{ key: citekey, library }]
     );
+
+    // Restore original outputPathTemplate
+    format.outputPathTemplate = originalOutputPathTemplate;
   }
 
   async openNotes(createdOrUpdatedMarkdownFilesPaths: string[]) {
