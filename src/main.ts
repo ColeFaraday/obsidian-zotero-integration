@@ -85,6 +85,7 @@ export default class ZoteroConnector extends Plugin {
     this.settings.exportFormats.forEach((f) => {
       this.addExportCommand(f);
       this.addUpdateActiveNoteCommand(f);
+      this.addUpdateAllNotesCommand(f);
     });
 
     this.addCommand({
@@ -285,6 +286,53 @@ export default class ZoteroConnector extends Plugin {
         await this.runImport(format.name, citekey);
         new Notice(`Note updated from Zotero (${format.name}).`);
         console.log(`Note updated from Zotero (${format.name}).`);
+      },
+    });
+  }
+
+  addUpdateAllNotesCommand(format: ExportFormat) {
+    this.addCommand({
+      id: `zdc-update-all-notes-${format.name}`,
+      name: `Update all notes from Zotero (${format.name})`,
+      callback: async () => {
+        console.log(`Update all notes command triggered for format: ${format.name}`);
+        const noteImportFolder = this.settings.noteImportFolder;
+        if (!noteImportFolder) {
+          new Notice('No note import folder set.');
+          return;
+        }
+        // Get all files in the folder
+        const files = this.app.vault.getFiles().filter(f => f.path.startsWith(noteImportFolder));
+        console.log('Files found in noteImportFolder:', files.map(f => f.path));
+        let updatedCount = 0;
+        for (const file of files) {
+          try {
+            const fileContent = await this.app.vault.read(file);
+            let citekey = '';
+            const frontmatterMatch = fileContent.match(/---[\s\S]*?citekey: (.+)[\s\S]*?---/);
+            if (frontmatterMatch) {
+              citekey = frontmatterMatch[1].trim();
+              console.log(`Citekey from frontmatter in ${file.path}:`, citekey);
+            } else {
+              const bodyMatch = fileContent.match(/citekey: (.+)/);
+              if (bodyMatch) {
+                citekey = bodyMatch[1].trim();
+                console.log(`Citekey from body in ${file.path}:`, citekey);
+              }
+            }
+            if (!citekey) {
+              console.log(`No citekey found in ${file.path}`);
+              continue;
+            }
+            await this.runImport(format.name, citekey);
+            updatedCount++;
+            console.log(`Note updated from Zotero (${format.name}): ${file.path}`);
+          } catch (e) {
+            console.error(`Error updating note ${file.path}:`, e);
+          }
+        }
+        new Notice(`Updated ${updatedCount} notes from Zotero (${format.name}).`);
+        console.log(`Updated ${updatedCount} notes from Zotero (${format.name}).`);
       },
     });
   }
