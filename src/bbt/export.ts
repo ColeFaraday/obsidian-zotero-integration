@@ -593,12 +593,16 @@ async function getTemplateData(
 
 export async function exportToMarkdown(
   params: ExportToMarkdownParams,
-  explicitCiteKeys?: CiteKey[]
+  explicitCiteKeys?: CiteKey[],
+  onlyGetPaths?: boolean // NEW ARGUMENT
 ): Promise<string[]> {
   const importDate = moment();
   const { database, exportFormat, settings } = params;
   const sourcePath = getATemplatePath(params);
   const canExtract = doesEXEExist();
+
+  console.log("source path", sourcePath);
+  console.log("output path template", exportFormat.outputPathTemplate);
 
   const citeKeys = explicitCiteKeys
     ? explicitCiteKeys
@@ -606,12 +610,41 @@ export async function exportToMarkdown(
   if (!citeKeys.length) return [];
 
   const libraryID = citeKeys[0].library;
+
+  // If onlyGetPaths is true, just return the resolved markdown file paths WITHOUT calling getItemJSONFromCiteKeys
+  if (onlyGetPaths) {
+    const markdownPaths: string[] = [];
+    for (const key of citeKeys) {
+      // Use minimal data for template rendering
+      const pathTemplateData = await applyBasicTemplates(sourcePath, {
+        annotations: [],
+        citekey: key.key,
+        libraryID: key.library,
+      });
+      const markdownPath = normalizePath(
+        sanitizeFilePath(
+          removeStartingSlash(
+            await renderTemplate(
+              sourcePath,
+              exportFormat.outputPathTemplate,
+              pathTemplateData
+            )
+          )
+        )
+      );
+      console.log(`Resolved markdown path: ${markdownPath}`);
+      markdownPaths.push(markdownPath);
+    }
+    return markdownPaths;
+  }
+
   let itemData: any;
   try {
     itemData = await getItemJSONFromCiteKeys(citeKeys, database, libraryID);
   } catch (e) {
     return [];
   }
+
 
   // Variable to store the paths of the markdown files that will be created on import.
   // This is an array of an interface defined by a citekey and a path.

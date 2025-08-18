@@ -91,6 +91,7 @@ export interface ZoteroConnectorSettings {
   settingsVersion?: number;
   shouldConcat?: boolean;
   whichNotesToOpenAfterImport: NotesToOpenAfterImport;
+  importFromZoteroByDefault: boolean;
 }
 
 export interface CiteKeyExport {

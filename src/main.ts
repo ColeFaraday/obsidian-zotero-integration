@@ -1,6 +1,7 @@
 import Fuse from 'fuse.js';
 import { EditableFileView, Events, Plugin, TFile } from 'obsidian';
 import { shellPath } from 'shell-path';
+import path from 'path';
 
 import { DataExplorerView, viewType } from './DataExplorerView';
 import { LoadingModal } from './bbt/LoadingModal';
@@ -24,6 +25,7 @@ import {
   ExportFormat,
   ZoteroConnectorSettings,
 } from './types';
+import { normalizePath } from 'obsidian';
 
 const commandPrefix = 'obsidian-zotero-desktop-connector:';
 const citationCommandIDPrefix = 'zdc-';
@@ -39,6 +41,7 @@ const DEFAULT_SETTINGS: ZoteroConnectorSettings = {
   citeSuggestTemplate: '[[{{citekey}}]]',
   openNoteAfterImport: false,
   whichNotesToOpenAfterImport: 'first-imported-note',
+  importFromZoteroByDefault: false, // Default is false for backward compatibility
 };
 
 async function fixPath() {
@@ -198,13 +201,34 @@ export default class ZoteroConnector extends Plugin {
           database: this.settings.database,
           port: this.settings.port,
         };
-        this.openNotes(
-          await exportToMarkdown({
-            settings: this.settings,
-            database,
-            exportFormat: format,
-          })
-        );
+        if (this.settings.importFromZoteroByDefault) {
+          this.openNotes(
+            await exportToMarkdown({
+              settings: this.settings,
+              database,
+              exportFormat: format,
+            })
+          );
+        } else {
+          // Just open the note file(s) without updating from Zotero
+          // Use the new onlyGetPaths argument to resolve the actual file paths
+          let notePaths = await exportToMarkdown(
+            {
+              settings: this.settings,
+              database,
+              exportFormat: format,
+            },
+            undefined,
+            true
+          );
+          // Prepend noteImportFolder if set
+          if (this.settings.noteImportFolder) {
+            notePaths = notePaths.map((p) =>
+              normalizePath(path.join(this.settings.noteImportFolder, p))
+            );
+          }
+          this.openNotes(notePaths);
+        }
       },
     });
   }

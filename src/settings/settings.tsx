@@ -50,6 +50,7 @@ function SettingsComponent({
   const [ocrState, setOCRState] = React.useState(settings.pdfExportImageOCR);
 
   const [concat, setConcat] = React.useState(!!settings.shouldConcat);
+  const [importFromZoteroByDefault, setImportFromZoteroByDefault] = React.useState(!!settings.importFromZoteroByDefault);
 
   const updateCite = React.useCallback(
     debounce(
@@ -220,6 +221,20 @@ function SettingsComponent({
             });
           }}
           className={`checkbox-container${concat ? ' is-enabled' : ''}`}
+        />
+      </SettingItem>
+      <SettingItem
+        name="Import from Zotero by default"
+        description="If enabled, export commands will update notes from Zotero before opening. If disabled, export commands will only open the note file(s) without updating from Zotero."
+      >
+        <div
+          onClick={() => {
+            setImportFromZoteroByDefault((state) => {
+              updateSetting('importFromZoteroByDefault', !state);
+              return !state;
+            });
+          }}
+          className={`checkbox-container${importFromZoteroByDefault ? ' is-enabled' : ''}`}
         />
       </SettingItem>
       <SettingItem name="Citation Formats" isHeading />
