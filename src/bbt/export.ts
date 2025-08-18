@@ -734,6 +734,11 @@ export async function exportToMarkdown(
       let annots: any[] = [];
 
       attachmentData[attachmentPath]?.annotations?.forEach((annot: any) => {
+        // Exclude comments or titles matching Citations###
+        const isCitaComment =
+          (typeof annot.comment === 'string' && /^Citations\d+$/.test(annot.comment)) ||
+          (typeof annot.title === 'string' && /^Citations\d+$/.test(annot.title));
+        if (isCitaComment) return;
         annots.push(
           convertNativeAnnotation(
             annot,

@@ -151,7 +151,22 @@ export async function getAttachmentsFromCiteKey(
   modal.close();
 
   try {
-    return JSON.parse(res).result;
+    // Filter out unwanted annotations before returning
+    const result = JSON.parse(res).result;
+    if (Array.isArray(result)) {
+      result.forEach((attachment) => {
+        if (Array.isArray(attachment.annotations)) {
+          attachment.annotations = attachment.annotations.filter(
+            (annot) =>
+              !(
+                (typeof annot.comment === 'string' && /^Citations\d+$/.test(annot.comment)) ||
+                (typeof annot.title === 'string' && /^Citations\d+$/.test(annot.title))
+              )
+          );
+        }
+      });
+    }
+    return result;
   } catch (e) {
     console.error(e);
     new Notice(`Error retrieving notes: ${e.message}`, 10000);
@@ -432,23 +447,8 @@ export async function getItemJSONFromRelations(
     return null;
   }
 
-  const items: any[] = citekeys.length
-    ? await getItemJSONFromCiteKeys(citekeys, database, libraryID)
-    : [];
-
-  return idOrder.map((id) => {
-    if (idMap[id].citekey) {
-      const item = items.find(
-        (item) => getCiteKeyFromAny(item)?.key === idMap[id].citekey
-      );
-
-      if (item) {
-        return item;
-      }
-    }
-
-    return idMap[id];
-  });
+  // Only return citekeys, not full item objects
+  return citekeys;
 }
 
 export async function getIssueDateFromCiteKey(
