@@ -71,6 +71,9 @@ function getQueryParams(format: CitationFormat) {
       }`;
     case 'pandoc':
       return `format=pandoc${format.brackets ? '&brackets=true' : ''}`;
+    case 'obsidian-link':
+      // Use pandoc formatter for obsidian-link
+      return `format=pandoc${format.brackets ? '&brackets=true' : ''}`;
     case 'latex':
       return `format=latex&command=${format.command || 'cite'}`;
     case 'biblatex':
@@ -111,6 +114,12 @@ export async function getCAYW(
     win.show();
     modal.close();
     ZQueue.end(qid);
+    if (format.format === 'obsidian-link' && typeof res === 'string') {
+      // Transform @citekey to [[citekey]], : to ' - ', and ; to ,
+      return res
+        .replace(/@([\w:-]+)/g, (_, key) => `[[${key.replace(/:/g, ' - ').replace(/;/g, ',')}]]`)
+        .replace(/;/g, ',');
+    }
     return res;
   } catch (e) {
     win.show();

@@ -64,7 +64,11 @@ export function CiteFormatSettings({
         delete newFormat.template;
       }
 
-      if (newFormat.format !== 'pandoc' && newFormat.brackets) {
+      if (
+        newFormat.format !== 'pandoc' &&
+        newFormat.format !== 'obsidian-link' &&
+        newFormat.brackets
+      ) {
         delete newFormat.brackets;
       }
 
@@ -139,6 +143,7 @@ export function CiteFormatSettings({
             <option value="latex">LaTeX</option>
             <option value="biblatex">BibLaTeX</option>
             <option value="pandoc">Pandoc</option>
+            <option value="obsidian-link">Obsidian Link</option>
             <option value="formatted-citation">Formatted Citation</option>
             <option value="formatted-bibliography">
               Formatted Bibliography
@@ -232,7 +237,7 @@ export function CiteFormatSettings({
         </div>
       )}
 
-      {format.format === 'pandoc' && (
+      {(format.format === 'pandoc' || format.format === 'obsidian-link') && (
         <div className="zt-format__form">
           <div className="zt-format__label">Include Brackets</div>
           <div className="zt-format__input-wrapper">

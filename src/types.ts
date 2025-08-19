@@ -2,6 +2,7 @@ export type Format =
   | 'latex'
   | 'biblatex'
   | 'pandoc'
+  | 'obsidian-link'
   | 'formatted-citation'
   | 'formatted-bibliography'
   | 'template';
