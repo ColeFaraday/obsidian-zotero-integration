@@ -203,34 +203,29 @@ export default class ZoteroConnector extends Plugin {
           database: this.settings.database,
           port: this.settings.port,
         };
-        if (this.settings.importFromZoteroByDefault) {
-          this.openNotes(
-            await exportToMarkdown({
-              settings: this.settings,
-              database,
-              exportFormat: format,
-            })
-          );
-        } else {
-          // Just open the note file(s) without updating from Zotero
-          // Use the new onlyGetPaths argument to resolve the actual file paths
-          let notePaths = await exportToMarkdown(
-            {
-              settings: this.settings,
-              database,
-              exportFormat: format,
-            },
-            undefined,
-            true
-          );
-          // Prepend noteImportFolder if set
-          if (this.settings.noteImportFolder) {
-            notePaths = notePaths.map((p) =>
-              normalizePath(path.join(this.settings.noteImportFolder, p))
-            );
+        // Ensure output is in noteImportFolder
+        const originalOutputPathTemplate = format.outputPathTemplate;
+        if (this.settings.noteImportFolder) {
+          format.outputPathTemplate = normalizePath(path.join(this.settings.noteImportFolder, path.basename(format.outputPathTemplate)));
+        }
+        try {
+          // Always use onlyGetPaths: true, exportToMarkdown will handle missing files
+          const notePaths = await exportToMarkdown({
+            settings: this.settings,
+            database,
+            exportFormat: format,
+          }, undefined, true);
+          if (!Array.isArray(notePaths)) {
+            new Notice('Export failed: result is not iterable.');
+            console.error('Export failed: result is not iterable.', notePaths);
+            return;
           }
           this.openNotes(notePaths);
+        } catch (e) {
+          new Notice(`Export failed: ${e.message}`);
+          console.error('Export failed:', e);
         }
+        format.outputPathTemplate = originalOutputPathTemplate;
       },
     });
   }

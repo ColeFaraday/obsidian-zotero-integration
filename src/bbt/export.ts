@@ -611,7 +611,7 @@ export async function exportToMarkdown(
 
   const libraryID = citeKeys[0].library;
 
-  // If onlyGetPaths is true, just return the resolved markdown file paths WITHOUT calling getItemJSONFromCiteKeys
+  // If onlyGetPaths is true, resolve markdown paths, and if file doesn't exist, do full import
   if (onlyGetPaths) {
     const markdownPaths: string[] = [];
     for (const key of citeKeys) {
@@ -633,6 +633,11 @@ export async function exportToMarkdown(
         )
       );
       console.log(`Resolved markdown path: ${markdownPath}`);
+      const file = app.vault.getAbstractFileByPath(markdownPath);
+      if (!file) {
+        // File doesn't exist, do full import for this citekey
+        await exportToMarkdown(params, [key], false);
+      }
       markdownPaths.push(markdownPath);
     }
     return markdownPaths;
