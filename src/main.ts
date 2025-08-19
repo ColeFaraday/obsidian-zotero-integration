@@ -299,8 +299,8 @@ export default class ZoteroConnector extends Plugin {
         // Get all files in the folder
         const files = this.app.vault.getFiles().filter(f => f.path.startsWith(noteImportFolder));
         console.log('Files found in noteImportFolder:', files.map(f => f.path));
-        let updatedCount = 0;
-        for (const file of files) {
+        // Run all updates in parallel
+        const results = await Promise.all(files.map(async (file) => {
           try {
             const fileContent = await this.app.vault.read(file);
             let citekey = '';
@@ -317,15 +317,17 @@ export default class ZoteroConnector extends Plugin {
             }
             if (!citekey) {
               console.log(`No citekey found in ${file.path}`);
-              continue;
+              return 0;
             }
             await this.runImport(format.name, citekey);
-            updatedCount++;
             console.log(`Note updated from Zotero (${format.name}): ${file.path}`);
+            return 1;
           } catch (e) {
             console.error(`Error updating note ${file.path}:`, e);
+            return 0;
           }
-        }
+        }));
+        const updatedCount = results.reduce((sum, val) => sum + val, 0);
         new Notice(`Updated ${updatedCount} notes from Zotero (${format.name}).`);
         console.log(`Updated ${updatedCount} notes from Zotero (${format.name}).`);
       },
