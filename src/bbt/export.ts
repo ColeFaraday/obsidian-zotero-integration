@@ -744,8 +744,6 @@ export async function exportToMarkdown(
 
       const imageRelativePath = exportFormat.imageOutputPathTemplate
         ? normalizePath(
-            path.join(
-              settings.noteImportFolder || '',
               sanitizeFilePath(
                 removeStartingSlash(
                   await renderTemplate(
@@ -755,7 +753,6 @@ export async function exportToMarkdown(
                   )
                 )
               )
-            )
           )
         : '';
 
