@@ -166,8 +166,8 @@ export async function getCAYWJSON(database: DatabaseWithPort) {
     return null;
   }
 
-  const modal = new LoadingModal(app, 'Awaiting item selection from Zotero...');
-  modal.open();
+  // const modal = new LoadingModal(app, 'Awaiting item selection from Zotero...');
+  // modal.open();
 
   const qid = Symbol();
   try {
@@ -183,7 +183,7 @@ export async function getCAYWJSON(database: DatabaseWithPort) {
 
     win.show();
 
-    modal.close();
+    // modal.close();
     ZQueue.end(qid);
     if (res) {
       return JSON.parse(res).items || [];
@@ -193,7 +193,7 @@ export async function getCAYWJSON(database: DatabaseWithPort) {
   } catch (e) {
     win.show();
     console.error(e);
-    modal.close();
+    // modal.close();
     new Notice(`Error retrieving cite key: ${e.message}`, 10000);
     ZQueue.end(qid);
     return null;

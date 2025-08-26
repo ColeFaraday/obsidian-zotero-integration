@@ -38,8 +38,8 @@ export async function extractAnnotations(
   params: ExtractParams,
   overridePath?: string
 ) {
-  const modal = new LoadingModal(app, 'Extracting annotations...');
-  modal.open();
+  // const modal = new LoadingModal(app, 'Extracting annotations...');
+  // modal.open();
 
   const args = [input];
 
@@ -77,7 +77,7 @@ export async function extractAnnotations(
       args
     );
 
-    modal.close();
+    // modal.close();
 
     if (result.stderr.toLowerCase().includes('password')) {
       new Notice(
@@ -94,7 +94,7 @@ export async function extractAnnotations(
 
     return result.stdout;
   } catch (e) {
-    modal.close();
+    // modal.close();
 
     if (e.message.toLowerCase().includes('password')) {
       new Notice(

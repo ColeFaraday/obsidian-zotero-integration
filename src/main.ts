@@ -448,11 +448,11 @@ export default class ZoteroConnector extends Plugin {
       !_exeInternalVersion ||
       _exeInternalVersion !== internalVersion
     ) {
-      const modal = new LoadingModal(
-        app,
-        'Updating Obsidian Zotero Integration PDF Utility...'
-      );
-      modal.open();
+      // const modal = new LoadingModal(
+      //   app,
+      //   'Updating Obsidian Zotero Integration PDF Utility...'
+      // );
+      // modal.open();
 
       try {
         const success = await downloadAndExtract();
@@ -466,7 +466,7 @@ export default class ZoteroConnector extends Plugin {
         //
       }
 
-      modal.close();
+      // modal.close();
     }
   }
 }
