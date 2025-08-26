@@ -13,8 +13,8 @@ export async function getNotesFromCiteKeys(
 ) {
   let res: string;
 
-  const modal = new LoadingModal(app, 'Fetching notes from Zotero...');
-  modal.open();
+  // const modal = new LoadingModal(app, 'Fetching notes from Zotero...');
+  // modal.open();
 
   const qid = Symbol();
   try {
@@ -34,14 +34,14 @@ export async function getNotesFromCiteKeys(
     });
   } catch (e) {
     console.error(e);
-    modal.close();
+    // modal.close();
     new Notice(`Error retrieving notes: ${e.message}`, 10000);
     ZQueue.end(qid);
     return null;
   }
 
   ZQueue.end(qid);
-  modal.close();
+  // modal.close();
 
   try {
     return JSON.parse(res).result;
@@ -58,8 +58,8 @@ export async function getCollectionFromCiteKey(
 ) {
   let res: string;
 
-  const modal = new LoadingModal(app, 'Fetching collections from Zotero...');
-  modal.open();
+  // const modal = new LoadingModal(app, 'Fetching collections from Zotero...');
+  // modal.open();
 
   const qid = Symbol();
   try {
@@ -79,14 +79,14 @@ export async function getCollectionFromCiteKey(
     });
   } catch (e) {
     console.error(e);
-    modal.close();
+    // modal.close();
     new Notice(`Error retrieving notes: ${e.message}`, 10000);
     ZQueue.end(qid);
     return null;
   }
 
   ZQueue.end(qid);
-  modal.close();
+  // modal.close();
 
   try {
     const result = JSON.parse(res).result;
@@ -120,8 +120,8 @@ export async function getAttachmentsFromCiteKey(
 ) {
   let res: string;
 
-  const modal = new LoadingModal(app, 'Fetching collections from Zotero...');
-  modal.open();
+  // const modal = new LoadingModal(app, 'Fetching collections from Zotero...');
+  // modal.open();
 
   const qid = Symbol();
   try {
@@ -141,14 +141,14 @@ export async function getAttachmentsFromCiteKey(
     });
   } catch (e) {
     console.error(e);
-    modal.close();
+    // modal.close();
     new Notice(`Error retrieving notes: ${e.message}`, 10000);
     ZQueue.end(qid);
     return null;
   }
 
   ZQueue.end(qid);
-  modal.close();
+  // modal.close();
 
   try {
     // Filter out unwanted annotations before returning
@@ -258,11 +258,11 @@ export async function getBibFromCiteKeys(
   if (!citeKeys || !citeKeys.length) return null;
 
   let res: string;
-  let modal: LoadingModal;
-  if (!silent) {
-    modal = new LoadingModal(app, 'Fetching data from Zotero...');
-    modal.open();
-  }
+  // let modal: LoadingModal;
+  // if (!silent) {
+  //   modal = new LoadingModal(app, 'Fetching data from Zotero...');
+  //   modal.open();
+  // }
 
   const qid = Symbol();
   try {
@@ -292,14 +292,14 @@ export async function getBibFromCiteKeys(
     });
   } catch (e) {
     console.error(e);
-    !silent && modal.close();
+    // !silent && modal.close();
     new Notice(`Error retrieving formatted bibliography: ${e.message}`, 10000);
     ZQueue.end(qid);
     return null;
   }
 
   ZQueue.end(qid);
-  !silent && modal.close();
+  // !silent && modal.close();
 
   try {
     const parsed = JSON.parse(res);
@@ -329,8 +329,8 @@ export async function getItemJSONFromCiteKeys(
 ) {
   let res: string;
 
-  const modal = new LoadingModal(app, 'Fetching data from Zotero...');
-  modal.open();
+  // const modal = new LoadingModal(app, 'Fetching data from Zotero...');
+  // modal.open();
 
   const qid = Symbol();
   try {
@@ -354,14 +354,14 @@ export async function getItemJSONFromCiteKeys(
     });
   } catch (e) {
     console.error(e);
-    modal.close();
+    // modal.close();
     new Notice(`Error retrieving item data: ${e.message}`, 10000);
     ZQueue.end(qid);
     return null;
   }
 
   ZQueue.end(qid);
-  modal.close();
+  // modal.close();
 
   try {
     const parsed = JSON.parse(res);
@@ -386,8 +386,8 @@ export async function getItemJSONFromRelations(
 ) {
   let res: string;
 
-  const modal = new LoadingModal(app, 'Fetching data from Zotero...');
-  modal.open();
+  // const modal = new LoadingModal(app, 'Fetching data from Zotero...');
+  // modal.open();
 
   const uriMap: Record<string, string> = {};
   const idOrder: string[] = [];
@@ -417,14 +417,14 @@ export async function getItemJSONFromRelations(
     });
   } catch (e) {
     console.error(e);
-    modal.close();
+    // modal.close();
     new Notice(`Error retrieving item data: ${e.message}`, 10000);
     ZQueue.end(qid);
     return null;
   }
 
   ZQueue.end(qid);
-  modal.close();
+  // modal.close();
 
   const idMap: Record<string, any> = {};
   const citekeys: CiteKey[] = [];
@@ -457,8 +457,8 @@ export async function getIssueDateFromCiteKey(
 ) {
   let res: string;
 
-  const modal = new LoadingModal(app, 'Fetching data from Zotero...');
-  modal.open();
+  // const modal = new LoadingModal(app, 'Fetching data from Zotero...');
+  // modal.open();
 
   const qid = Symbol();
   try {
@@ -482,14 +482,14 @@ export async function getIssueDateFromCiteKey(
     });
   } catch (e) {
     console.error(e);
-    modal.close();
+    // modal.close();
     new Notice(`Error retrieving item data: ${e.message}`, 10000);
     ZQueue.end(qid);
     return null;
   }
 
   ZQueue.end(qid);
-  modal.close();
+  // modal.close();
 
   try {
     const parsed = JSON.parse(res);

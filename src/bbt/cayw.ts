@@ -27,11 +27,11 @@ export async function isZoteroRunning(
     return cachedIsRunning;
   }
 
-  let modal: LoadingModal;
-  if (!silent) {
-    modal = new LoadingModal(app, 'Fetching data from Zotero...');
-    modal.open();
-  }
+  // let modal: LoadingModal;
+  // if (!silent) {
+  //   modal = new LoadingModal(app, 'Fetching data from Zotero...');
+  //   modal.open();
+  // }
   const qid = Symbol();
   try {
     await ZQueue.wait(qid);
@@ -44,13 +44,13 @@ export async function isZoteroRunning(
       headers: defaultHeaders,
     });
 
-    modal?.close();
+    // modal?.close();
     cachedIsRunning = res === 'ready';
     lastCheck = Date.now();
     ZQueue.end(qid);
     return cachedIsRunning;
   } catch (e) {
-    modal?.close();
+    // modal?.close();
     !silent &&
       new Notice(
         'Cannot connect to Zotero. Please ensure it is running and the Better BibTeX plugin is installed',
@@ -90,13 +90,13 @@ export async function getCAYW(
     return null;
   }
 
-  const modal = new LoadingModal(app, 'Awaiting item selection from Zotero...');
-  modal.open();
+  // const modal = new LoadingModal(app, 'Awaiting item selection from Zotero...');
+  // modal.open();
 
   const qid = Symbol();
   try {
     if (format.format === 'formatted-bibliography') {
-      modal.close();
+      // modal.close();
       const citeKeys = await getCiteKeys(database);
       return await getBibFromCiteKeys(citeKeys, database, format.cslStyle);
     }
@@ -112,7 +112,7 @@ export async function getCAYW(
     });
 
     win.show();
-    modal.close();
+    // modal.close();
     ZQueue.end(qid);
     if (format.format === 'obsidian-link' && typeof res === 'string') {
       // Transform @citekey to [[citekey]], : to ' - ', and ; to ,
@@ -124,7 +124,7 @@ export async function getCAYW(
   } catch (e) {
     win.show();
     console.error(e);
-    modal.close();
+    // modal.close();
     new Notice(`Error processing citation: ${e.message}`, 10000);
     ZQueue.end(qid);
     return null;
